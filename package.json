@@ -3,6 +3,7 @@
 	"version": "1.0.3",
 	"description": "Generate css variable colors from tailwind palettes",
 	"files": [
+		"src",
 		"README.md"
 	],
 	"keywords": [
