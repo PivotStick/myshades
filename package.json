@@ -1,6 +1,6 @@
 {
-	"name": "mshades",
-	"version": "1.0.3",
+	"name": "myshades",
+	"version": "1.0.0",
 	"description": "Generate css variable colors from tailwind palettes",
 	"files": [
 		"README.md"
@@ -18,10 +18,10 @@
 	},
 	"author": "Pivotass",
 	"license": "ISC",
-	"homepage": "https://github.com/PivotStick/mshades#readme",
+	"homepage": "https://github.com/PivotStick/myshades#readme",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/PivotStick/mshades"
+		"url": "https://github.com/PivotStick/myshades"
 	},
 	"dependencies": {
 		"chroma-js": "^2.4.2"
