@@ -4,7 +4,7 @@ This vite plugin will generate shades for any given hex color
 
 ```js
 import { sveltekit } from "@sveltejs/kit/vite";
-import { palettes } from "mshades";
+import { palettes } from "myshades";
 
 /** @type {import('vite').UserConfig} */
 const config = {
