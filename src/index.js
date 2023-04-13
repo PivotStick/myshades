@@ -7,7 +7,7 @@ const { tailwindColors3 } = require("./colors/tailwind3");
  * @param {Record<string, string>} args
  * @returns {Promise<import("vite").Plugin>}
  */
-exports.palettes = async (args = {}) => {
+exports.myshades = async (args = {}) => {
 	return {
 		name: "tailwind-palettes-generator",
 		async config(config) {

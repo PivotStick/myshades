@@ -4,13 +4,13 @@ This vite plugin will generate shades for any given hex color
 
 ```js
 import { sveltekit } from "@sveltejs/kit/vite";
-import { palettes } from "myshades";
+import { myshades } from "myshades";
 
 /** @type {import('vite').UserConfig} */
 const config = {
 	plugins: [
 		sveltekit(),
-		palettes({
+		myshades({
 			primary: "#f0f2ee", // The first key is the default color
 			danger: "#ff0000"
 		})
