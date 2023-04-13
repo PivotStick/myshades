@@ -1,0 +1,14 @@
+{
+	"name": "mshades",
+	"version": "1.0.0",
+	"description": "Generate css variable colors from tailwind palettes",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Pivotass",
+	"license": "ISC",
+	"dependencies": {
+		"chroma-js": "^2.4.2"
+	}
+}
