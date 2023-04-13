@@ -1,6 +1,6 @@
 {
 	"name": "mshades",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Generate css variable colors from tailwind palettes",
 	"files": [
 		"README.md"
