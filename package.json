@@ -2,12 +2,23 @@
 	"name": "mshades",
 	"version": "1.0.0",
 	"description": "Generate css variable colors from tailwind palettes",
+	"keywords": [
+		"scss",
+		"tailwind",
+		"vite",
+		"palettes",
+		"colors"
+	],
 	"main": "src/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Pivotass",
 	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/PivotStick/mshades"
+	},
 	"dependencies": {
 		"chroma-js": "^2.4.2"
 	}
