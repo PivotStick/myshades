@@ -1,3 +1,5 @@
+This vite plugin will generate shades for any given hex color
+
 ## In your Vite project...
 
 ```js
