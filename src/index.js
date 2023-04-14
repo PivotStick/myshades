@@ -3,6 +3,9 @@ const { writeFile } = require("fs").promises;
 const { generateTailwindColorFamily } = require("./functions/generateTailwindColorFamily");
 const { tailwindColors3 } = require("./colors/tailwind3");
 
+exports.generate = (hex = chroma.random(), referenceColors = tailwindColors3) =>
+	generateTailwindColorFamily(hex, referenceColors);
+
 /**
  * @param {Record<string, string>} args
  * @returns {Promise<import("vite").Plugin>}
