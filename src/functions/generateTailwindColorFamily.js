@@ -23,7 +23,7 @@ exports.generateTailwindColorFamily = (hexcode, referenceColors) => {
 
 	return closestColorFamily.shades.map((color) => {
 		let newColor = color.hexcode;
-		let newSaturation = chroma(newColor).get("hsl.s") * saturationRatio;
+		let newSaturation = (chroma(newColor).get("hsl.s") * saturationRatio || 1);
 
 		newColor = chroma(newColor).set("hsl.s", newSaturation).hex();
 		newColor = chroma(newColor).set("hsl.h", hueDifference).hex();
