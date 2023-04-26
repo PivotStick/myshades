@@ -1,0 +1,173 @@
+@use "sass:color";
+@use "sass:math";
+@use "sass:list";
+
+$-labConstants_Kn: 18;
+$-labConstants_Xn: 0.95047;
+$-labConstants_Yn: 1;
+$-labConstants_Zn: 1.08883;
+$-labConstants_t0: 0.137931034;
+$-labConstants_t1: 0.206896552;
+$-labConstants_t2: 0.12841855;
+$-labConstants_t3: 0.008856452;
+
+@function -rgb_xyz($r) {
+  $r: math.div($r, 255);
+  @if ($r <= 0.04045) {
+    @return math.div($r, 12.92);
+  }
+
+  @return math.pow(math.div(($r + 0.055), 1.055), 2.4);
+}
+
+@function -xyz_-lab($t) {
+  @if ($t > $-labConstants_t3) {
+    @return math.pow($t, math.div(1, 3));
+  }
+
+  @return math.div($t, $-labConstants_t2) + $-labConstants_t0;
+}
+
+@function -rgb2xyz($r, $g, $b) {
+  $r: -rgb_xyz($r);
+  $g: -rgb_xyz($g);
+  $b: -rgb_xyz($b);
+
+  $x: -xyz_-lab(
+    math.div(
+      0.4124564 * $r + 0.3575761 * $g + 0.1804375 * $b,
+      $-labConstants_Xn
+    )
+  );
+  $y: -xyz_-lab(
+    math.div(0.2126729 * $r + 0.7151522 * $g + 0.072175 * $b, $-labConstants_Yn)
+  );
+  $z: -xyz_-lab(
+    math.div(0.0193339 * $r + 0.119192 * $g + 0.9503041 * $b, $-labConstants_Zn)
+  );
+
+  @return ($x, $y, $z);
+}
+
+@function -lab($color) {
+  $r: -strip-unit(color.red($color));
+  $g: -strip-unit(color.green($color));
+  $b: -strip-unit(color.blue($color));
+
+  $ref: -rgb2xyz($r, $g, $b);
+  $x: list.nth($ref, 1);
+  $y: list.nth($ref, 2);
+  $z: list.nth($ref, 3);
+  $l: 116 * $y - 16;
+
+  @if ($l < 0) {
+    $l: 0;
+  }
+
+  @return ($l, 500 * ($x - $y), 200 * ($y - $z));
+}
+
+@function -rad2deg($rad) {
+  @return 360 * math.div($rad, (2 * math.$pi));
+}
+
+@function -deg2rad($deg) {
+  @return math.div(2 * math.$pi * $deg, 360);
+}
+
+@function -exp($x) {
+  @return math.pow(math.$e, $x);
+}
+
+@function -strip-unit($n) {
+  @return math.div($n, ($n * 0 + 1));
+}
+
+@function deltaE($a, $b, $Kl: 1, $Kc: 1, $Kh: 1) {
+  $ref: -lab($a);
+  $ref-1: -lab($b);
+
+  $L1: list.nth($ref, 1);
+  $a1: list.nth($ref, 2);
+  $b1: list.nth($ref, 3);
+
+  $L2: list.nth($ref-1, 1);
+  $a2: list.nth($ref-1, 2);
+  $b2: list.nth($ref-1, 3);
+
+  $avgL: math.div($L1 + $L2, 2);
+  $C1: math.sqrt(math.pow($a1, 2) + math.pow($b1, 2));
+  $C2: math.sqrt(math.pow($a2, 2) + math.pow($b2, 2));
+
+  $avgC: math.div($C1 + $C2, 2);
+
+  $G: 0.5 *
+    (
+      1 -
+        math.sqrt(
+          math.div(math.pow($avgC, 7), (math.pow($avgC, 7)) + math.pow(25, 7))
+        )
+    );
+
+  $a1p: $a1 * (1 + $G);
+  $a2p: $a2 * (1 + $G);
+
+  $C1p: math.sqrt(math.pow($a1p, 2) + math.pow($b1, 2));
+  $C2p: math.sqrt(math.pow($a2p, 2) + math.pow($b2, 2));
+
+  $avgCp: math.div($C1p + $C2p, 2);
+
+  $arctan1: -strip-unit(math.atan2($b1, $a1p));
+  $arctan2: -strip-unit(math.atan2($b2, $a2p));
+
+  $h1p: if($arctan1 >= 0, $arctan1, $arctan1 + 360);
+  $h2p: if($arctan2 >= 0, $arctan2, $arctan2 + 360);
+
+  $avgHp: if(
+    math.abs($h1p - $h2p) > 180,
+    math.div($h1p + $h2p + 360, 2),
+    math.div($h1p + $h2p, 2)
+  );
+
+  $T: 1 - 0.17 * math.cos(-deg2rad($avgHp - 30)) + 0.24 *
+    math.cos(-deg2rad(2 * $avgHp)) + 0.32 * math.cos(-deg2rad(3 * $avgHp + 6)) -
+    0.2 * math.cos(-deg2rad(4 * $avgHp - 63));
+
+  $deltaHp: $h2p - $h1p;
+  $deltaHp: if(
+    math.abs($deltaHp) <= 180,
+    $deltaHp,
+    if($h2p <= $h1p, $deltaHp + 360, $deltaHp - 360)
+  );
+  $deltaHp: 2 * math.sqrt($C1p * $C2p) *
+    math.sin(math.div(-deg2rad($deltaHp), 2));
+
+  $deltaL: $L2 - $L1;
+  $deltaCp: $C2p - $C1p;
+
+  $sl: 1 +
+    math.div(
+      (0.015 * math.pow($avgL - 50, 2)),
+      math.sqrt(20 + math.pow($avgL - 50, 2))
+    );
+  $sc: 1 + 0.045 * $avgCp;
+  $sh: 1 + 0.015 * $avgCp * $T;
+
+  $deltaTheta: 30 *
+    -exp(-(math.pow(math.div(-strip-unit($avgHp - 275), 25), 2)));
+
+  $Rc: 2 *
+    math.sqrt(
+      math.div(math.pow($avgCp, 7), (math.pow($avgCp, 7)) + math.pow(25, 7))
+    );
+  $Rt: -$Rc * math.sin(2 * -deg2rad($deltaTheta));
+
+  $result: math.sqrt(
+    math.pow(math.div($deltaL, ($Kl * $sl)), 2) +
+      math.pow(math.div($deltaCp, ($Kc * $sc)), 2) +
+      math.pow(math.div($deltaHp, ($Kh * $sh)), 2) + $Rt *
+      (math.div($deltaCp, ($Kc * $sc))) * (math.div($deltaHp, ($Kh * $sh)))
+  );
+
+  @return math.max(0, math.min(100, $result));
+}

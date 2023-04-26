@@ -1,0 +1,103 @@
+@use "chroma";
+@use "sass:color";
+@use "sass:math";
+@use "sass:list";
+@use "sass:map";
+
+@function find($hexcode, $referenceColors) {
+  // Add DELTA key / value to array of objects
+
+  @for $i from 1 through list.length($referenceColors) {
+    $color: list.nth($referenceColors, $i);
+    $shades: ();
+
+    @each $shade in map.get($color, "shades") {
+      $shades: list.append(
+        $shades,
+        map.merge(
+          $shade,
+          (
+            delta: chroma.deltaE($hexcode, map.get($shade, "hexcode")),
+          )
+        )
+      );
+    }
+
+    $color: map.set($color, "shades", $shades);
+    $referenceColors: list.set-nth($referenceColors, $i, $color);
+  }
+
+  @for $i from 1 through list.length($referenceColors) {
+    $color: list.nth($referenceColors, $i);
+    $color: map.set($color, "closestShade", ());
+
+    @each $current in map.get($color, "shades") {
+      $delta: map.get(map.get($color, "closestShade"), "delta");
+      @if ($delta == null) or ($delta > map.get($current, "delta")) {
+        $color: map.set($color, "closestShade", $current);
+      }
+    }
+
+    $referenceColors: list.set-nth($referenceColors, $i, $color);
+  }
+
+  $closestColorFamily: list.nth($referenceColors, 1);
+  @each $current in $referenceColors {
+    $closestDelta: map.get(
+      map.get($closestColorFamily, "closestShade"),
+      "delta"
+    );
+    $currentDelta: map.get(map.get($current, "closestShade"), "delta");
+
+    @if $closestDelta > $currentDelta {
+      $closestColorFamily: $current;
+    }
+  }
+
+  @for $i from 1 through list.length(map.get($closestColorFamily, "shades")) {
+    $shades: map.get($closestColorFamily, "shades");
+    $shade: list.nth($shades, $i);
+    $closestColorFamily: map.set(
+      $closestColorFamily,
+      "shades",
+      list.set-nth(
+        $shades,
+        $i,
+        map.merge(
+          $shade,
+          (
+            lightnessDiff:
+              math.abs(
+                color.lightness(map.get($shade, "hexcode")) -
+                  color.lightness($hexcode)
+              ),
+          )
+        )
+      )
+    );
+  }
+
+  $closestColorFamily: map.set(
+    $closestColorFamily,
+    "closestShadeLightness",
+    list.nth(map.get($closestColorFamily, "shades"), 1)
+  );
+
+  @each $current in map.get($closestColorFamily, "shades") {
+    $closestShadeLightnessDiff: map.get(
+      map.get($closestColorFamily, "closestShadeLightness"),
+      "lightnessDiff"
+    );
+    $currentLightnessDiff: map.get($current, "lightnessDiff");
+
+    @if $currentLightnessDiff < $closestShadeLightnessDiff {
+      $closestColorFamily: map.set(
+        $closestColorFamily,
+        "closestShadeLightness",
+        $current
+      );
+    }
+  }
+
+  @return $closestColorFamily;
+}

@@ -1,0 +1,51 @@
+@use "src/tailwindColors3";
+@use "src/tailwindColorFamily";
+@use "sass:color";
+@use "sass:map";
+@use "sass:list";
+
+$reference: tailwindColors3.$values !default;
+$palette: () !default;
+
+@each $name, $color in $palette {
+	$palette: map.set($palette, $name, tailwindColorFamily.generate($color, $reference));
+}
+
+:root {
+	@each $name, $shades in $palette {
+		@each $shade, $hexcode in $shades {
+			--#{$name}-#{$shade}: #{$hexcode};
+		}
+
+		@each $shade, $hexcode in $shades {
+			$contrast: if(color.lightness($hexcode) < 50, 100, 900);
+			--on-#{$name}-#{$shade}: var(--#{$name}-#{$contrast});
+		}
+	}
+}
+
+@mixin -colors($name, $shades) {
+	@each $shade, $hexcode in $shades {
+		--color-#{$shade}: var(--#{$name}-#{$shade});
+	}
+
+	@each $shade, $hexcode in $shades {
+		--on-color-#{$shade}: var(--on-#{$name}-#{$shade});
+	}
+}
+
+$-i: 1;
+@each $name, $shades in $palette {
+	@if $-i == 1 {
+		:root,
+		.#{$name} {
+			@include -colors($name, $shades);
+		}
+	} @else {
+		.#{$name} {
+			@include -colors($name, $shades);
+		}
+	}
+
+	$-i: $-i + 1;
+}
