@@ -1,56 +1,46 @@
 @use "closestColor";
+@use "utils";
 @use "sass:color";
 @use "sass:map";
 @use "sass:math";
 @use "sass:list";
 
 @function generate($hexcode, $referenceColors) {
-  $closestColorFamily: closestColor.find($hexcode, $referenceColors);
+	$closestColorFamily: closestColor.find($hexcode, $referenceColors);
 
-  $inputHue: color.hue($hexcode);
-  $matchHue: color.hue(
-    map.get(map.get($closestColorFamily, "closestShadeLightness"), "hexcode")
-  );
+	$inputHue: color.hue($hexcode);
+	$matchHue: color.hue(map.get(map.get($closestColorFamily, "closestShadeLightness"), "hexcode"));
 
-  $hueDifference: $inputHue - $matchHue;
+	$hueDifference: $inputHue - $matchHue;
 
-  $saturationRatio: math.div(
-    color.saturation($hexcode),
-    color.saturation(
-      map.get(map.get($closestColorFamily, "closestShadeLightness"), "hexcode")
-    )
-  );
+	$saturationRatio: math.div(
+		color.saturation($hexcode),
+		color.saturation(map.get(map.get($closestColorFamily, "closestShadeLightness"), "hexcode"))
+	);
 
-  $shades: ();
+	$shades: ();
 
-  @each $color in map.get($closestColorFamily, "shades") {
-    $newColor: map.get($color, "hexcode");
+	@each $color in map.get($closestColorFamily, "shades") {
+		$newColor: map.get($color, "hexcode");
 
-    $newSaturation: (
-        color.saturation($newColor) *
-          if($saturationRatio == 0, 1, $saturationRatio)
-      )
-      %
-      100;
+		$newSaturation: (color.saturation($newColor) * if($saturationRatio == 0, 1, $saturationRatio))
+			%
+			100;
 
-    $newColor: color.adjust($newColor, $saturation: $newSaturation);
-    $newColor: color.adjust(
-      $newColor,
-      $hue: if($hueDifference == 0, $matchHue, $hueDifference)
-    );
+		$newColor: color.change($newColor, $saturation: $newSaturation);
+		$newColor: color.adjust($newColor, $hue: $hueDifference);
 
-    @if (
-      map.get(
-          map.get($closestColorFamily, "closestShadeLightness"),
-          "number"
-        ) ==
-        map.get($color, "number")
-    ) {
-      $newColor: $hexcode;
-    }
+		$newColor: utils.rgb2hsl($newColor);
 
-    $shades: map.set($shades, map.get($color, "number"), $newColor);
-  }
+		@if (
+			map.get(map.get($closestColorFamily, "closestShadeLightness"), "number") ==
+				map.get($color, "number")
+		) {
+			$newColor: $hexcode;
+		}
 
-  @return $shades;
+		$shades: map.set($shades, map.get($color, "number"), $newColor);
+	}
+
+	@return $shades;
 }

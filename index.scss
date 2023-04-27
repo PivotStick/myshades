@@ -1,8 +1,11 @@
 @use "src/tailwindColors3";
 @use "src/tailwindColorFamily";
+@use "src/utils";
+
 @use "sass:color";
 @use "sass:map";
 @use "sass:list";
+@use "sass:math";
 
 $reference: tailwindColors3.$values !default;
 $palette: () !default;
@@ -18,7 +21,8 @@ $palette: () !default;
 		}
 
 		@each $shade, $hexcode in $shades {
-			$contrast: if(color.lightness($hexcode) < 50, 100, 900);
+			$luminance: math.round(utils.luminance($hexcode) * 100);
+			$contrast: if($luminance < 40, 100, 900);
 			--on-#{$name}-#{$shade}: var(--#{$name}-#{$contrast});
 		}
 	}

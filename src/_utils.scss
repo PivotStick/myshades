@@ -1,0 +1,77 @@
+@use "sass:map";
+@use "sass:math";
+@use "sass:color";
+
+@function luminance($color) {
+	$colors: (
+		"red": red($color),
+		"green": green($color),
+		"blue": blue($color)
+	);
+
+	@each $name, $value in $colors {
+		$adjusted: 0;
+		$value: math.div($value, 255);
+
+		@if $value < 0.03928 {
+			$value: math.div($value, 12.92);
+		} @else {
+			$value: math.div(($value + 0.055), 1.055);
+			$value: math.pow($value, 2.4);
+		}
+
+		$colors: map-merge(
+			$colors,
+			(
+				$name: $value
+			)
+		);
+	}
+
+	@return (map-get($colors, "red") * 0.2126) + (map-get($colors, "green") * 0.7152) +
+		(map-get($colors, "blue") * 0.0722);
+}
+
+@function rgb2hsl($color) {
+	$r: color.red($color);
+	$g: color.green($color);
+	$b: color.blue($color);
+
+	$r: math.div($r, 255);
+	$g: math.div($g, 255);
+	$b: math.div($b, 255);
+
+	$min: math.min($r, $g, $b);
+	$max: math.max($r, $g, $b);
+
+	$l: math.div(($max + $min), 2);
+	$s: null;
+	$h: null;
+
+	@if ($max == $min) {
+		$s: 0;
+		$h: NaN;
+	} @else {
+		$s: if(
+			$l < 0.5,
+			math.div(($max - $min), ($max + $min)),
+			math.div(($max - $min), (2 - $max - $min))
+		);
+	}
+
+	@if ($r == $max) {
+		$h: math.div(($g - $b), ($max - $min));
+	} @else if ($g == $max) {
+		$h: 2 + math.div(($b - $r), ($max - $min));
+	} @else if ($b == $max) {
+		$h: 4 + math.div(($r - $g), ($max - $min));
+	}
+
+	$h: $h * 60;
+
+	@if ($h < 0) {
+		$h: $h + 360;
+	}
+
+	@return color.change($color, $hue: $h * 1deg, $saturation: $s * 100%, $lightness: $l * 100%);
+}
