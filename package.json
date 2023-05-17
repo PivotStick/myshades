@@ -4,6 +4,7 @@
 	"description": "Generate css variable colors from tailwind palettes",
 	"files": [
 		"src",
+		"index.scss",
 		"README.md"
 	],
 	"keywords": [
